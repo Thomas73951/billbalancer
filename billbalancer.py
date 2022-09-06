@@ -12,6 +12,7 @@ import numpy as np
 
 # pylint: disable=redefined-outer-name
 
+
 def num_col(arr):
     """
     takes a numpy array and will return the number of columns.
@@ -51,14 +52,16 @@ def process_data(arr, names):
 
     return rel_to_avg
 
+
 def parse_for_name(filename):
     """
     takes a file name in the format " *_name.* " and will extract name
     e.g. billbalancer_joe.csv => joe
     """
     try:
-        result = re.search('(?<=_).*(?=\.)', filename).group(0)
-    except AttributeError: # nothing found
+        result = re.search(
+            '(?<=_).*(?=\.)', filename).group(0)  # pylint: disable=W1401
+    except AttributeError:  # nothing found
         result = ''
 
     return result
@@ -93,12 +96,29 @@ def init_file():
     """
     makes a new empty .csv file with correct name in current dir.
     """
-    # TODO file already exists - prompt before overwriting
 
     name = str(input('Enter the persons name for this file: '))
     header = ['Date', 'Description', 'Value', 'Processed']
-    #print(header)
+    # print(header)
     filename = 'billbalancer_' + name + '.csv'
+
+    filenames = find_files('billbalancer_*.csv')
+    for file in filenames:
+
+        # file matches one already in directory
+        if file == filename:
+            input_text = '\n' + 'a file with this name already exists!' + \
+                '\n' + 'type "y" to overwrite, leave blank to cancel: '
+            overwrite_decision = str(input(input_text))
+
+            if overwrite_decision == "y":
+                print('overwriting file')
+                break
+
+            print('not overwriting file')
+            # no file being initialised so exit.
+            return name
+
     csv_write_data(filename, header, 'w')
     return name
 
@@ -110,7 +130,7 @@ def add_rows(filename):
     data = []
     description = ''
 
-    while True: # start of: while add more rows
+    while True:  # start of: while add more rows
         # input data (date, description, value, processed)
         # (processed: a tag that goes to 1 when bills have been balanced to that point)
 
@@ -120,7 +140,7 @@ def add_rows(filename):
         # TODO value err for others too as leaving them blank will break stuff.
 
         # date
-        while True: # start of: while enter date correctly
+        while True:  # start of: while enter date correctly
             try:
                 year = int(input('enter year (int): '))
                 month = int(input('enter month (int): '))
@@ -129,7 +149,7 @@ def add_rows(filename):
                 # in format yyyy-mm-dd
                 date = datetime.datetime(year, month, day).strftime('%Y-%m-%d')
                 # print(date)
-                break # end of: while enter date correctly
+                break  # end of: while enter date correctly
 
             except ValueError:
                 print('value entered out of range, enter a valid date!')
@@ -146,15 +166,18 @@ def add_rows(filename):
             description = temp_description
 
         # value
-        value = float(input('Enter value of bill (£): '))
-        # TODO more than 2dp error.
+        while True:
+            value = float(input('Enter value of bill (£): '))
+            if len(str(value).split('.')[1]) <= 2:
+                break
+            print('warning: enter a value with less than 2dp')
 
         # add row to the data list (of lists)
         data.append([date, description, value, 0])
 
         # == 1 if any key is typed which ends the loop
         if str(input('type to stop or blank to add more rows: ')):
-            break # end of: while add more rows
+            break  # end of: while add more rows
 
     csv_write_data(filename, data, 'a')
 
@@ -167,11 +190,11 @@ def find_files(query):
     filenames = []
     for filename in glob.glob(query):
         filenames.append(filename)
-    #print(filenames)
+    # print(filenames)
     return filenames
 
 
-def print_list(plist, INDEX=False): # pylint: disable=c0103
+def print_list(plist, INDEX=False):  # pylint: disable=c0103
     """
     takes a list and prints it one element / line in the terminal.
     INDEX: optionally will print a number by each element
@@ -228,6 +251,8 @@ if __name__ == "__main__":
     #     bills_to_balance = np.array([20, 40, 60])
     #     #bills_to_balance = np.array([[10,10], [15, 25], [30, 30]])
     # else:
+    # TODO revamp with a menu system?
+
     print('using custom data')
 
     # new file or open existing
@@ -235,7 +260,8 @@ if __name__ == "__main__":
         print('creating a new file')
         PERSON_NAME = init_file()
         FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
-        add_rows(FILENAME)
+        if str(input('type "y" to add rows to this file, or blank to exit program')):
+            add_rows(FILENAME)
 
     else:
         print('looking for existing files...')
