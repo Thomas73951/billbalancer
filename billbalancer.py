@@ -7,6 +7,7 @@ import csv
 import sys
 import glob
 import datetime
+import re
 import numpy as np
 
 # pylint: disable=redefined-outer-name
@@ -24,11 +25,10 @@ def num_col(arr):
     return arr.shape[arr.ndim - 1]
 
 
-def process_data(arr):
+def process_data(arr, names):
     """
     takes a numpy array (1D) and converts it to comparison to average.
     """
-    # TODO take in filenames list so I know who it is.
     # TODO write an algorithm to work out who needs to pay who
     # not just who is owed and who has to pay
     num_ppl = num_col(arr)
@@ -40,15 +40,28 @@ def process_data(arr):
     for i in range(0, num_ppl):
         value = rel_to_avg[i]
         value_str = f"{abs(value):0.2f}"
+        person_name = names[i]
 
         if value > 0:
-            print('person ', i, ' needs to pay £', value_str, sep='')
+            print(person_name, ' needs to pay £', value_str, sep='')
         elif value == 0:
-            print('person', i, 'requires no action')
+            print(person_name, 'requires no action')
         else:
-            print('person ', i, ' is owed £', value_str, sep='')
+            print(person_name, ' is owed £', value_str, sep='')
 
     return rel_to_avg
+
+def parse_for_name(filename):
+    """
+    takes a file name in the format " *_name.* " and will extract name
+    e.g. billbalancer_joe.csv => joe
+    """
+    try:
+        result = re.search('(?<=_).*(?=\.)', filename).group(0)
+    except AttributeError: # nothing found
+        result = ''
+
+    return result
 
 
 def csv_write_data(filename, data, open_method):
@@ -122,8 +135,11 @@ def add_rows(filename):
                 print('value entered out of range, enter a valid date!')
 
         # description
-        input_text = 'leave blank to reuse last description (' + description + ')' + \
-            '\n' + 'or enter a description of the bill: '
+        if description:
+            input_text = 'leave blank to reuse last description ("' + description + '")' + \
+                '\n' + 'or enter a description of the bill: '
+        else:
+            input_text = 'enter a description of the bill: '
         temp_description = str(input(input_text))
         # if left blank ^ it will reuse the last one, otherwise writes new.
         if temp_description:
@@ -224,21 +240,22 @@ if __name__ == "__main__":
     else:
         print('looking for existing files...')
         filenames = find_files('billbalancer_*.csv')
-        print_list(filenames, INDEX=True)
+        names = []
+        for filename in filenames:
+            names.append(parse_for_name(filename))
+        print_list(names, INDEX=True)
 
         INPUT_TEXT = 'type "y" to select a file to add rows to, ' + \
             'or blank to selecting all for balancing: '
         if str(input(INPUT_TEXT)):
             person_number = int(input('select a file number: '))
             add_rows(filenames[person_number])
-
-            # TODO - select name from that
         else:
             print('processing all files in dir')
             bills_to_balance = process_files(filenames)
             print(bills_to_balance)
 
-            balanced = process_data(bills_to_balance)
+            balanced = process_data(bills_to_balance, names)
             print(balanced)
 
 # TODO print csv file
