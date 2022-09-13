@@ -122,43 +122,66 @@ def init_file():
     csv_write_data(filename, header, 'w')
     return name
 
+def enter_date():
+    """
+    prompts user to enter the desired date which is returned
+    """
+    date_message = ['year', 'month', 'day']
+    date_entry = []
+    current_date = datetime.date.today()
+    current_date = [current_date.year, current_date.month, current_date.day]
+    # print(current_date)
+    try:
+        for i in range(3):
+            print('leave blank for current', date_message[i], end=' ')
+            print('(', current_date[i], ')', sep='')
+            print('enter', date_message[i], '(int): ', end='')
+            date_tmp = input()
+            if date_tmp:
+                date_entry.append(int(date_tmp))
+            else:
+                date_entry.append(current_date[i])
+
+        return datetime.date(date_entry[0],date_entry[1],date_entry[2])
+
+    except ValueError:
+        print('value entered out of range, enter a valid date!')
+        return enter_date()
+
+def enter_money():
+    """
+    prompts user to enter a money value and returns it,
+    errors for too many dp and non numbers -> forces retry
+    """
+    try:
+        value = float(input('Enter value of bill (£): £'))
+
+        # checks number of dp
+        if len(str(value).split('.')[1]) <= 2:
+            return value
+
+        print('warning: enter a value with less than 2dp')
+        return enter_money()
+
+    except ValueError:
+        print('warning: please enter a number')
+        print('note: XX, XX.X, XX.XX are all valid')
+        return enter_money()
+
 
 def add_rows(filename):
     """
     takes a person name and will find the file and add a row to it with given data
     """
-    # TODO change to be all separate functions
     data = []
     description = ''
 
+    # input data (date, description, value, processed)
+    # (processed: a tag that goes to 1 when bills have been balanced to that point)
     while True:  # start of: while add more rows
-        # input data (date, description, value, processed)
-        # (processed: a tag that goes to 1 when bills have been balanced to that point)
 
         # date
-        date_message = ['year', 'month', 'day']
-        date_entry = []
-        current_date = datetime.date.today()
-        current_date = [current_date.year, current_date.month, current_date.day]
-        # print(current_date)
-        while True:  # start of: while enter date correctly
-            try:
-                for i in range(3):
-                    print('leave blank for current', date_message[i], end=' ')
-                    print('(', current_date[i], ')', sep='')
-                    print('enter', date_message[i], '(int): ', end='')
-                    date_tmp = input()
-                    if date_tmp:
-                        date_entry.append(int(date_tmp))
-                    else:
-                        date_entry.append(current_date[i])
-
-                date = datetime.date(date_entry[0],date_entry[1],date_entry[2])
-                break  # end of: while enter date correctly
-
-            except ValueError:
-                print('value entered out of range, enter a valid date!')
-
+        date = enter_date()
         # print(date)
 
         # description
@@ -173,16 +196,7 @@ def add_rows(filename):
             description = temp_description
 
         # value
-        while True:
-            try:
-                value = float(input('Enter value of bill (£): £'))
-                if len(str(value).split('.')[1]) <= 2:
-                    break
-                print('warning: enter a value with less than 2dp')
-
-            except ValueError:
-                print('warning: please enter a number')
-                print('note: XX, XX.X, XX.XX are all valid')
+        value = enter_money()
 
         # add row to the data list (of lists)
         data.append([date, description, value, 0])
@@ -295,5 +309,10 @@ if __name__ == "__main__":
 
             balanced = process_data(bills_to_balance, names)
             print(balanced)
-
+    print('program complete, exiting...')
 # TODO print csv file
+
+# TODO option to manually edit files -> marking as processed from here.
+# prints whole file if not too long then asks for line to edit as processed
+# and the menu before will allow for changing of other things.
+# or overhaul this whole thing with the menu improvements and make it a full qt thing?
