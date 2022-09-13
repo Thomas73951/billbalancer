@@ -127,14 +127,13 @@ def add_rows(filename):
     """
     takes a person name and will find the file and add a row to it with given data
     """
+    # TODO change to be all separate functions
     data = []
     description = ''
 
     while True:  # start of: while add more rows
         # input data (date, description, value, processed)
         # (processed: a tag that goes to 1 when bills have been balanced to that point)
-
-        # TODO value err for others too as leaving them blank will break stuff.
 
         # date
         date_message = ['year', 'month', 'day']
@@ -175,10 +174,15 @@ def add_rows(filename):
 
         # value
         while True:
-            value = float(input('Enter value of bill (£): '))
-            if len(str(value).split('.')[1]) <= 2:
-                break
-            print('warning: enter a value with less than 2dp')
+            try:
+                value = float(input('Enter value of bill (£): £'))
+                if len(str(value).split('.')[1]) <= 2:
+                    break
+                print('warning: enter a value with less than 2dp')
+
+            except ValueError:
+                print('warning: please enter a number')
+                print('note: XX, XX.X, XX.XX are all valid')
 
         # add row to the data list (of lists)
         data.append([date, description, value, 0])
