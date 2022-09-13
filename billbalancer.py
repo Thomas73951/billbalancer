@@ -134,25 +134,33 @@ def add_rows(filename):
         # input data (date, description, value, processed)
         # (processed: a tag that goes to 1 when bills have been balanced to that point)
 
-        # TODO make it a for loop with a list of messages and give defualt of now()
-        # put try into for loop so prompts immediately.
-
         # TODO value err for others too as leaving them blank will break stuff.
 
         # date
+        date_message = ['year', 'month', 'day']
+        date_entry = []
+        current_date = datetime.date.today()
+        current_date = [current_date.year, current_date.month, current_date.day]
+        # print(current_date)
         while True:  # start of: while enter date correctly
             try:
-                year = int(input('enter year (int): '))
-                month = int(input('enter month (int): '))
-                day = int(input('enter day (int): '))
+                for i in range(3):
+                    print('leave blank for current', date_message[i], end=' ')
+                    print('(', current_date[i], ')', sep='')
+                    print('enter', date_message[i], '(int): ', end='')
+                    date_tmp = input()
+                    if date_tmp:
+                        date_entry.append(int(date_tmp))
+                    else:
+                        date_entry.append(current_date[i])
 
-                # in format yyyy-mm-dd
-                date = datetime.datetime(year, month, day).strftime('%Y-%m-%d')
-                # print(date)
+                date = datetime.date(date_entry[0],date_entry[1],date_entry[2])
                 break  # end of: while enter date correctly
 
             except ValueError:
                 print('value entered out of range, enter a valid date!')
+
+        # print(date)
 
         # description
         if description:
@@ -176,7 +184,7 @@ def add_rows(filename):
         data.append([date, description, value, 0])
 
         # == 1 if any key is typed which ends the loop
-        if str(input('type to stop or blank to add more rows: ')):
+        if str(input('type to stop, or blank to add more rows: ')):
             break  # end of: while add more rows
 
     csv_write_data(filename, data, 'a')
