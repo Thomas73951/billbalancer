@@ -30,27 +30,37 @@ def process_data(arr, names):
     """
     takes a numpy array (1D) and converts it to comparison to average.
     """
-    # TODO write an algorithm to work out who needs to pay who
-    # not just who is owed and who has to pay
     num_ppl = num_col(arr)
 
     total = np.sum(arr)
     average = total / num_ppl
-    rel_to_avg = average - arr
+    rel_to_avg = arr - average  # np arr of diff to avg
 
+    # sum of all values in rel to avg > 0.
+    sum_positive = rel_to_avg[rel_to_avg > 0].sum()
+
+    # receive_money_weight is a percentage 0 -> 1.
+    receive_money_weight = np.empty((num_ppl))
     for i in range(0, num_ppl):
-        value = rel_to_avg[i]
-        value_str = f"{abs(value):0.2f}"
-        person_name = names[i]
-
-        if value > 0:
-            print(person_name, ' needs to pay £', value_str, sep='')
-        elif value == 0:
-            print(person_name, 'requires no action')
+        if rel_to_avg[i] > 0:
+            receive_money_weight[i] = rel_to_avg[i] / sum_positive
         else:
-            print(person_name, ' is owed £', value_str, sep='')
+            receive_money_weight[i] = 0
 
-    return rel_to_avg
+    # calculate who owes who what and prints it.
+    # TODO add useful comments
+    for i in range(0, num_ppl):
+        if rel_to_avg[i] < 0:
+            for j in range(0, num_ppl):
+                if j != i:
+                    value = abs(rel_to_avg[i] * receive_money_weight[j])
+
+                    if value > 0:
+                        print(names[i], 'owes', names[j], '£', end='')
+                        print(f"{abs(value):0.2f}")  # format +ve, .XX
+
+    # return rel_to_avg
+    # TODO could return a matrix (arr) of who owes who
 
 
 def parse_for_name(filename):
@@ -122,6 +132,7 @@ def init_file():
     csv_write_data(filename, header, 'w')
     return name
 
+
 def enter_date():
     """
     prompts user to enter the desired date which is returned
@@ -142,11 +153,12 @@ def enter_date():
             else:
                 date_entry.append(current_date[i])
 
-        return datetime.date(date_entry[0],date_entry[1],date_entry[2])
+        return datetime.date(date_entry[0], date_entry[1], date_entry[2])
 
     except ValueError:
         print('value entered out of range, enter a valid date!')
         return enter_date()
+
 
 def enter_money():
     """
@@ -239,7 +251,7 @@ def process_files(filenames):
     """
     totals = []
     for filename in filenames:
-        print(filename)
+        # print(filename)
         values = np.asarray(csv_read_non_processed_values(filename))
         totals.append(np.sum(values))
     return totals
@@ -258,7 +270,7 @@ def csv_read_non_processed_values(filename):
         next(reader, None)
 
         for row in reader:
-            print(row[2], row[3])
+            # print(row[2], row[3])
             if row[3] == '0':
                 values.append(float(row[2]))
                 # TODO write flag to 1 as now processed
@@ -286,7 +298,7 @@ if __name__ == "__main__":
         print('creating a new file')
         PERSON_NAME = init_file()
         FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
-        if str(input('type "y" to add rows to this file, or blank to exit program')):
+        if str(input('type "y" to add rows to this file, or blank to exit program: ')):
             add_rows(FILENAME)
 
     else:
@@ -303,12 +315,13 @@ if __name__ == "__main__":
             person_number = int(input('select a file number: '))
             add_rows(filenames[person_number])
         else:
-            print('processing all files in dir')
+            print('processing all files in dir...')
             bills_to_balance = process_files(filenames)
-            print(bills_to_balance)
+            # print(bills_to_balance)
 
-            balanced = process_data(bills_to_balance, names)
-            print(balanced)
+            # balanced = process_data(bills_to_balance, names)
+            process_data(bills_to_balance, names)
+            # print(balanced)
     print('program complete, exiting...')
 # TODO print csv file
 
