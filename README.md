@@ -19,3 +19,4 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 - [ ] Overhaul menu system, possibly GUI
 - [ ] Add option to increase print level to show intermediate calculations
 - [ ] Add ability to edit file entries
+- [ ] Add conda install `environment.yml`
