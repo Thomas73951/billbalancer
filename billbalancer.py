@@ -104,9 +104,9 @@ def csv_write_data(filename, data, open_method):
 
 def init_file():
     """
-    makes a new empty .csv file with correct name in current dir.
+    makes a new empty .csv file with inputted name in current dir.
     """
-
+    # TODO check something was entered (name not blank)
     name = str(input('Enter the persons name for this file: '))
     header = ['Date', 'Description', 'Value', 'Processed']
     # print(header)
@@ -183,7 +183,7 @@ def enter_money():
 
 def add_rows(filename):
     """
-    takes a person name and will find the file and add a row to it with given data
+    takes a person name and will find the file and add row(s) to it with given data
     """
     data = []
     description = ''
@@ -214,7 +214,7 @@ def add_rows(filename):
         data.append([date, description, value, 0])
 
         # == 1 if any key is typed which ends the loop
-        if str(input('type to stop, or blank to add more rows: ')):
+        if str(input('type "n" to stop, or blank to add more rows: ')):
             break  # end of: while add more rows
 
     csv_write_data(filename, data, 'a')
@@ -278,54 +278,84 @@ def csv_read_non_processed_values(filename):
     return values
 
 
+def is_integer(test_string):
+    """
+    checks a string to see if it's an int or not
+    credit: https://note.nkmk.me/en/python-check-int-float/
+    """
+    try:
+        float(test_string)
+    except ValueError:
+        return False
+    else:
+        return float(test_string).is_integer()
+
+
 if __name__ == "__main__":
     print('################ Running Main ###############')
+    # TODO revamp menu with a qt gui system?
 
-    # input data
-    # accepts any key for "y" and nothing for otherwise, fastest way of doing it imo
-
-    # if str(input('type "y" for example data, blank for custom data: ')):
-    #     print('using example data')
-    #     bills_to_balance = np.array([20, 40, 60])
-    #     #bills_to_balance = np.array([[10,10], [15, 25], [30, 30]])
-    # else:
-    # TODO revamp with a menu system?
-
-    print('using custom data')
-
-    # new file or open existing
-    if str(input('type "y" to create a file, or blank for existing files: ')):
-        print('creating a new file')
-        PERSON_NAME = init_file()
-        FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
-        if str(input('type "y" to add rows to this file, or blank to exit program: ')):
-            add_rows(FILENAME)
-
-    else:
-        print('looking for existing files...')
+    while True:
         filenames = find_files('billbalancer_*.csv')
         names = []
         for filename in filenames:
             names.append(parse_for_name(filename))
-        print_list(names, INDEX=True)
 
-        INPUT_TEXT = 'type "y" to select a file to add rows to, ' + \
-            'or blank to selecting all for balancing: '
-        if str(input(INPUT_TEXT)):
-            person_number = int(input('select a file number: '))
-            add_rows(filenames[person_number])
+        # TODO offset this so the file numbers start from 1 not 0.
+        if names:
+            print('\nExisting files in directory:')
+            print_list(names, INDEX=True)
         else:
-            print('processing all files in dir...')
-            bills_to_balance = process_files(filenames)
-            # print(bills_to_balance)
+            print('No files found')
 
-            # balanced = process_data(bills_to_balance, names)
-            process_data(bills_to_balance, names)
-            # print(balanced)
-    print('program complete, exiting...')
-# TODO print csv file
+            # create file?
+            if str(input('Type "y" to create a new file, leave blank to exit: ')):
+                PERSON_NAME = init_file()
+                FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
+                if str(input('type "y" to add rows to this file, or blank to exit: ')):
+                    add_rows(FILENAME)
+                    continue
+            # otherwise exit
+            break
 
-# TODO option to manually edit files -> marking as processed from here.
-# prints whole file if not too long then asks for line to edit as processed
-# and the menu before will allow for changing of other things.
-# or overhaul this whole thing with the menu improvements and make it a full qt thing?
+        print('\nOptions:')
+        print('- Type a file number to edit the file')
+        print('- To create a new file, type "n"')
+        print('- To balance all outstanding bills, type "b"')
+        print('- Leave blank to quit')
+        answer = input('Choice: ')
+
+        # TODO tidy up the numerous `continue`  and `break`
+        if answer:  # not left blank
+            if is_integer(answer):
+                answer = int(answer)
+
+                # TODO allow for proper file editing:
+                # printing of file (if not too long, two parts?)
+                # editing rows (inc mark/unmark processed)
+                # deleting file
+                # or adding rows.
+
+
+                # add rows to that file
+                add_rows(filenames[answer])
+
+            elif answer in {'n', 'N', 'new'}:
+                print('Creating a new file')
+                PERSON_NAME = init_file()
+                FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
+                if str(input('type "y" to add rows to this file, or blank to continue: ')):
+                    add_rows(FILENAME)
+
+            elif answer in {'b', 'B', 'balance'}:
+                bills_to_balance = process_files(filenames)
+                process_data(bills_to_balance, names)
+                if str(input('Type "y" to continue, leave blank to exit: ')):
+                    continue
+                break
+
+            else:
+                print('#### Warning: invalid option ####')
+
+        else:
+            break
