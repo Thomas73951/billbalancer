@@ -16,7 +16,7 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 - [ ] Change `processed` tag to 1 when processed
 - [ ] Add example csv files
 - [ ] Add option to change directory (currently same dir as file)
-- [ ] Overhaul menu system, possibly GUI
+- [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
-- [ ] Add ability to edit file entries
+- [ ] Add more file editing options
 - [ ] Add conda install `environment.yml`
