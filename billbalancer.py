@@ -2,6 +2,7 @@
 Takes a list of bills paid by multiple people and will balance them
 and say who needs to pay who and how much
 """
+# pylint: disable=redefined-outer-name
 
 import csv
 import sys
@@ -10,13 +11,9 @@ import datetime
 import re
 import numpy as np
 
-# pylint: disable=redefined-outer-name
 
-# TODO reorder fns: utilties (numpy, csv), billbalancer specific, etc.
 # Utility fns
 # - Numpy fns
-
-
 def num_col(arr):
     """
     takes a numpy array and will return the number of columns.
@@ -203,7 +200,7 @@ def enter_date():
 
     except ValueError:
         print('value entered out of range, enter a valid date!')
-        return enter_date() # prompts retry
+        return enter_date()  # prompts retry
 
 
 def enter_money():
@@ -224,7 +221,7 @@ def enter_money():
     except ValueError:
         print('warning: please enter a number')
         print('note: XX, XX.X, XX.XX are all valid')
-        return enter_money() # prompts retry
+        return enter_money()  # prompts retry
 
 
 def csv_read_non_processed_values(filename):
