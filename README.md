@@ -19,7 +19,7 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 - To run with conda:
   - `conda activate billbalancer`
   - `python billbalancer.py`
-- Export environemnt with `conda env export --no-builds | findstr -v "prefix" > environment.yml`
+- Export environment with `conda env export --no-builds | findstr -v "prefix" > environment.yml`
 
 ## TODO
 
