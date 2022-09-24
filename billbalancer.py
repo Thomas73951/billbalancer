@@ -12,6 +12,10 @@ import numpy as np
 
 # pylint: disable=redefined-outer-name
 
+# TODO reorder fns: utilties (numpy, csv), billbalancer specific, etc.
+# Utility fns
+# - Numpy fns
+
 
 def num_col(arr):
     """
@@ -26,60 +30,34 @@ def num_col(arr):
     return arr.shape[arr.ndim - 1]
 
 
-def process_data(arr, names):
+# - file fns
+def find_files(query):
     """
-    takes a numpy array (1D) and converts it to comparison to average.
+    takes the search query and looks for all files in the current dir that matches it
+    and returns a list with the names of them.
     """
-    num_ppl = num_col(arr)
-
-    total = np.sum(arr)
-    average = total / num_ppl
-    rel_to_avg = arr - average  # np arr of diff to avg
-
-    # sum of all values in rel to avg > 0.
-    sum_positive = rel_to_avg[rel_to_avg > 0].sum()
-
-    # receive_money_weight is a percentage 0 -> 1.
-    receive_money_weight = np.empty((num_ppl))
-    for i in range(0, num_ppl):
-        if rel_to_avg[i] > 0:
-            receive_money_weight[i] = rel_to_avg[i] / sum_positive
-        else:
-            receive_money_weight[i] = 0
-
-    # calculate who owes who what and prints it.
-    # TODO add useful comments
-    for i in range(0, num_ppl):
-        if rel_to_avg[i] < 0:
-            for j in range(0, num_ppl):
-                if j != i:
-                    value = abs(rel_to_avg[i] * receive_money_weight[j])
-
-                    if value > 0:
-                        print(names[i], 'owes', names[j], '£', end='')
-                        print(f"{abs(value):0.2f}")  # format +ve, .XX
-
-    # return rel_to_avg
-    # TODO could return a matrix (arr) of who owes who
+    filenames = []
+    for filename in glob.glob(query):
+        filenames.append(filename)
+    # print(filenames)
+    return filenames
 
 
-def parse_for_name(filename):
+def print_list(plist, INDEX=False):  # pylint: disable=c0103
     """
-    takes a file name in the format " *_name.* " and will extract name
-    e.g. billbalancer_joe.csv => joe
+    takes a list and prints it one element / line in the terminal.
+    INDEX: optionally will print a number by each element
     """
-    try:
-        result = re.search(
-            '(?<=_).*(?=\.)', filename).group(0)  # pylint: disable=W1401
-    except AttributeError:  # nothing found
-        result = ''
-
-    return result
+    for i, value in enumerate(plist):
+        if INDEX:
+            print(i, ':', end=' ')
+        print(value)
 
 
 def csv_write_data(filename, data, open_method):
     """
     takes a filename and data, then writes to the csv file with that and closes it
+    works for one or multiple rows
     """
     # uses numpy to find the dimension of the list (of possibly lists)
     data_np = np.asarray(data)
@@ -102,6 +80,21 @@ def csv_write_data(filename, data, open_method):
         csv_file.close()
 
 
+# - other fns
+def is_integer(test_string):
+    """
+    checks a string to see if it's an int or not
+    credit: https://note.nkmk.me/en/python-check-int-float/
+    """
+    try:
+        float(test_string)
+    except ValueError:
+        return False
+    else:
+        return float(test_string).is_integer()
+
+
+# billbalancer specific fns
 def init_file():
     """
     makes a new empty .csv file with inputted name in current dir.
@@ -133,52 +126,18 @@ def init_file():
     return name
 
 
-def enter_date():
+def parse_for_name(filename):
     """
-    prompts user to enter the desired date which is returned
-    """
-    date_message = ['year', 'month', 'day']
-    date_entry = []
-    current_date = datetime.date.today()
-    current_date = [current_date.year, current_date.month, current_date.day]
-    # print(current_date)
-    try:
-        for i in range(3):
-            print('leave blank for current', date_message[i], end=' ')
-            print('(', current_date[i], ')', sep='')
-            print('enter', date_message[i], '(int): ', end='')
-            date_tmp = input()
-            if date_tmp:
-                date_entry.append(int(date_tmp))
-            else:
-                date_entry.append(current_date[i])
-
-        return datetime.date(date_entry[0], date_entry[1], date_entry[2])
-
-    except ValueError:
-        print('value entered out of range, enter a valid date!')
-        return enter_date()
-
-
-def enter_money():
-    """
-    prompts user to enter a money value and returns it,
-    errors for too many dp and non numbers -> forces retry
+    takes a file name in the format " *_name.* " and will extract name
+    e.g. billbalancer_joe.csv => joe
     """
     try:
-        value = float(input('Enter value of bill (£): £'))
+        result = re.search(
+            '(?<=_).*(?=\.)', filename).group(0)  # pylint: disable=W1401
+    except AttributeError:  # nothing found
+        result = ''
 
-        # checks number of dp
-        if len(str(value).split('.')[1]) <= 2:
-            return value
-
-        print('warning: enter a value with less than 2dp')
-        return enter_money()
-
-    except ValueError:
-        print('warning: please enter a number')
-        print('note: XX, XX.X, XX.XX are all valid')
-        return enter_money()
+    return result
 
 
 def add_rows(filename):
@@ -213,48 +172,59 @@ def add_rows(filename):
         # add row to the data list (of lists)
         data.append([date, description, value, 0])
 
-        # == 1 if any key is typed which ends the loop
         if str(input('type "n" to stop, or blank to add more rows: ')):
+            # == 1 if any key is typed which ends the loop
             break  # end of: while add more rows
 
     csv_write_data(filename, data, 'a')
 
 
-def find_files(query):
+def enter_date():
     """
-    takes the search query and looks for all files in the current dir that matches it
-    and returns a list with the names of them.
+    prompts user to enter the desired date which is returned
     """
-    filenames = []
-    for filename in glob.glob(query):
-        filenames.append(filename)
-    # print(filenames)
-    return filenames
+    date_message = ['year', 'month', 'day']
+    date_entry = []
+    current_date = datetime.date.today()
+    current_date = [current_date.year, current_date.month, current_date.day]
+    # print(current_date)
+    try:
+        for i in range(3):
+            print('leave blank for current', date_message[i], end=' ')
+            print('(', current_date[i], ')', sep='')
+            print('enter', date_message[i], '(int): ', end='')
+            date_tmp = input()
+            if date_tmp:
+                date_entry.append(int(date_tmp))
+            else:
+                date_entry.append(current_date[i])
+
+        return datetime.date(date_entry[0], date_entry[1], date_entry[2])
+
+    except ValueError:
+        print('value entered out of range, enter a valid date!')
+        return enter_date() # prompts retry
 
 
-def print_list(plist, INDEX=False):  # pylint: disable=c0103
+def enter_money():
     """
-    takes a list and prints it one element / line in the terminal.
-    INDEX: optionally will print a number by each element
+    prompts user to enter a money value and returns it,
+    errors for too many dp and non numbers -> forces retry
     """
-    for i, value in enumerate(plist):
-        if INDEX:
-            print(i, ':', end=' ')
-        print(value)
+    try:
+        value = float(input('Enter value of bill (£): £'))
 
+        # checks number of dp
+        if len(str(value).split('.')[1]) <= 2:
+            return value
 
-def process_files(filenames):
-    """
-    takes a list of filenames, opens each, sums the values
-    (that havent already been processed - processed tag == 0),
-    returns a list with one total value per person, lines up with filenames
-    """
-    totals = []
-    for filename in filenames:
-        # print(filename)
-        values = np.asarray(csv_read_non_processed_values(filename))
-        totals.append(np.sum(values))
-    return totals
+        print('warning: enter a value with less than 2dp')
+        return enter_money()
+
+    except ValueError:
+        print('warning: please enter a number')
+        print('note: XX, XX.X, XX.XX are all valid')
+        return enter_money() # prompts retry
 
 
 def csv_read_non_processed_values(filename):
@@ -278,17 +248,55 @@ def csv_read_non_processed_values(filename):
     return values
 
 
-def is_integer(test_string):
+def process_files(filenames):
     """
-    checks a string to see if it's an int or not
-    credit: https://note.nkmk.me/en/python-check-int-float/
+    takes a list of filenames, opens each, sums the values
+    (that havent already been processed - processed tag == 0),
+    returns a list with one total value per person, lines up with filenames
     """
-    try:
-        float(test_string)
-    except ValueError:
-        return False
-    else:
-        return float(test_string).is_integer()
+    totals = []
+    for filename in filenames:
+        # print(filename)
+        values = np.asarray(csv_read_non_processed_values(filename))
+        totals.append(np.sum(values))
+    return totals
+
+
+def process_data(arr, names):
+    """
+    takes a numpy array (1D) and list of names
+    balances the arr and determines who owes who
+    """
+    num_ppl = num_col(arr)
+
+    total = np.sum(arr)
+    average = total / num_ppl
+    rel_to_avg = arr - average  # np arr of diff to avg
+
+    # sum of all values in rel to avg > 0.
+    sum_positive = rel_to_avg[rel_to_avg > 0].sum()
+
+    # receive_money_weight is a percentage 0 -> 1.
+    receive_money_weight = np.empty((num_ppl))
+    for i in range(0, num_ppl):
+        if rel_to_avg[i] > 0:
+            receive_money_weight[i] = rel_to_avg[i] / sum_positive
+        else:
+            receive_money_weight[i] = 0
+
+    # calculate who owes who what and prints it.
+    # TODO add useful comments
+    for i in range(0, num_ppl):
+        if rel_to_avg[i] < 0:
+            for j in range(0, num_ppl):
+                if j != i:
+                    value = abs(rel_to_avg[i] * receive_money_weight[j])
+
+                    if value > 0:
+                        print(names[i], 'owes', names[j], '£', end='')
+                        print(f"{abs(value):0.2f}")  # format +ve, .XX
+
+    # TODO could return a matrix (arr) of who owes who
 
 
 if __name__ == "__main__":
@@ -335,7 +343,6 @@ if __name__ == "__main__":
                 # editing rows (inc mark/unmark processed)
                 # deleting file
                 # or adding rows.
-
 
                 # add rows to that file
                 add_rows(filenames[answer])
