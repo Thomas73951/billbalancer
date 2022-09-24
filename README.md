@@ -6,10 +6,7 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 
 ## Running it
 
-- Run it with py, follow prompts to make new files, add entries to them. 
-- Re-run to add more files.
-- Optionally, select an existing file and add more entries to it.
-- When happy, continue to `balance` and it will print who owes who what.
+Recommended to use [Conda](#conda), otherwise packages can be installed with venv or pip. 
 
 ### Requirements
 
@@ -32,3 +29,4 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 - [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
 - [ ] Add more file editing options
+- [ ] Add recurring bill (e.g. on the first from March to June 2022)
