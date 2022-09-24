@@ -11,6 +11,19 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 - Optionally, select an existing file and add more entries to it.
 - When happy, continue to `balance` and it will print who owes who what.
 
+### Requirements
+
+- python (3.9)
+- numpy (1.23.1)
+
+### Conda
+
+- Create environment with `conda env create -f environment.yml`
+- To run with conda:
+  - `conda activate billbalancer`
+  - `python billbalancer.py`
+- Export environemnt with `conda env export --no-builds | findstr -v "prefix" > environment.yml`
+
 ## TODO
 
 - [ ] Change `processed` tag to 1 when processed
@@ -19,4 +32,3 @@ Takes a list of bills paid by multiple people and will balance them and say who 
 - [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
 - [ ] Add more file editing options
-- [ ] Add conda install `environment.yml`
