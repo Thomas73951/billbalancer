@@ -24,7 +24,6 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 ## TODO
 
 - [ ] Change `processed` tag to 1 when processed
-- [ ] Add example csv files
 - [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
 - [ ] Add more file editing options
