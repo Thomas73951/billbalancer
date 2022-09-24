@@ -4,16 +4,20 @@ and say who needs to pay who and how much
 """
 # pylint: disable=redefined-outer-name
 
+import os
 import csv
 import sys
 import glob
 import datetime
-import re
+import regex
 import numpy as np
 
+USER_PATH = 'example_csv' + os.path.sep
 
 # Utility fns
 # - Numpy fns
+
+
 def num_col(arr):
     """
     takes a numpy array and will return the number of columns.
@@ -92,15 +96,16 @@ def is_integer(test_string):
 
 
 # billbalancer specific fns
-def init_file():
+def init_file(file_path):
     """
-    makes a new empty .csv file with inputted name in current dir.
+    makes a new empty .csv file with inputted name
+    In directory of file_path
     """
     # TODO check something was entered (name not blank)
     name = str(input('Enter the persons name for this file: '))
     header = ['Date', 'Description', 'Value', 'Processed']
     # print(header)
-    filename = 'billbalancer_' + name + '.csv'
+    filename = file_path + 'billbalancer_' + name + '.csv'
 
     filenames = find_files('billbalancer_*.csv')
     for file in filenames:
@@ -128,9 +133,12 @@ def parse_for_name(filename):
     takes a file name in the format " *_name.* " and will extract name
     e.g. billbalancer_joe.csv => joe
     """
+    # TODO fix for example_csv\billbalancer_Alice.csv
     try:
-        result = re.search(
-            '(?<=_).*(?=\.)', filename).group(0)  # pylint: disable=W1401
+        # have to use regex instead of re as `\k` isn't supported.
+        # last underscore, match until dot.
+        result = regex.search(
+            '^.*_\K[^.]+', filename).group(0)  # pylint: disable=W1401
     except AttributeError:  # nothing found
         result = ''
 
@@ -139,7 +147,7 @@ def parse_for_name(filename):
 
 def add_rows(filename):
     """
-    takes a person name and will find the file and add row(s) to it with given data
+    takes a file and will add row(s) to it with given data
     """
     data = []
     description = ''
@@ -299,9 +307,36 @@ def process_data(arr, names):
 if __name__ == "__main__":
     print('################ Running Main ###############')
     # TODO revamp menu with a qt gui system?
+    # learn qt first with https://realpython.com/python-pyqt-gui-calculator/
+    # then implement the stuff in here.
+
+    # choose file path
+    while True:
+        print('File path options:')
+        print('- To load example files, type "e"')
+        print('- To load a code defined folder, type "c"')
+        print('- To use the current directory, leave blank')
+        path_answer = str(input('Choice: '))
+        if path_answer:
+            if path_answer in {'e', 'E', 'example'}:
+                print('Using example files...')
+                FILE_PATH = 'example_csv' + os.path.sep
+
+            elif path_answer in {'c', 'C', 'code'}:
+                print('Using Code defined folder. To edit, modify USER_PATH')
+                FILE_PATH = USER_PATH
+
+            else:
+                print('#### Warning: invalid option ####', end='\n\n')
+                continue
+
+        else:
+            FILE_PATH = ''
+
+        break
 
     while True:
-        filenames = find_files('billbalancer_*.csv')
+        filenames = find_files(FILE_PATH + 'billbalancer_*.csv')
         names = []
         for filename in filenames:
             names.append(parse_for_name(filename))
@@ -315,8 +350,8 @@ if __name__ == "__main__":
 
             # create file?
             if str(input('Type "y" to create a new file, leave blank to exit: ')):
-                PERSON_NAME = init_file()
-                FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
+                PERSON_NAME = init_file(FILE_PATH)
+                FILENAME = FILE_PATH + 'billbalancer_' + PERSON_NAME + '.csv'
                 if str(input('type "y" to add rows to this file, or blank to exit: ')):
                     add_rows(FILENAME)
                     continue
@@ -342,21 +377,21 @@ if __name__ == "__main__":
                 # or adding rows.
 
                 # add rows to that file
+                print('Adding row(s) to this file')
                 add_rows(filenames[answer])
 
             elif answer in {'n', 'N', 'new'}:
                 print('Creating a new file')
-                PERSON_NAME = init_file()
-                FILENAME = 'billbalancer_' + PERSON_NAME + '.csv'
+                PERSON_NAME = init_file(FILE_PATH)
+                FILENAME = FILE_PATH + 'billbalancer_' + PERSON_NAME + '.csv'
                 if str(input('type "y" to add rows to this file, or blank to continue: ')):
                     add_rows(FILENAME)
 
             elif answer in {'b', 'B', 'balance'}:
                 bills_to_balance = process_files(filenames)
                 process_data(bills_to_balance, names)
-                if str(input('Type "y" to continue, leave blank to exit: ')):
-                    continue
-                break
+                if str(input('Type "n" to exit, leave blank to continue: ')):
+                    break
 
             else:
                 print('#### Warning: invalid option ####')
