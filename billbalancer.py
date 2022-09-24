@@ -3,6 +3,7 @@ Takes a list of bills paid by multiple people and will balance them
 and say who needs to pay who and how much
 """
 # pylint: disable=redefined-outer-name
+# pylint: disable=invalid-name
 
 import os
 import csv
@@ -11,6 +12,7 @@ import glob
 import datetime
 import regex
 import numpy as np
+import pandas as pd
 
 USER_PATH = 'example_csv' + os.path.sep
 
@@ -111,7 +113,7 @@ def init_file(file_path):
     filename = file_path + 'billbalancer_' + name + '.csv'
 
     filenames = find_files('billbalancer_*.csv')
-    for file in filenames:
+    for file in filenames: # TODO make use of csv FileExistsError
 
         # file matches one already in directory
         if file == filename:
@@ -234,38 +236,31 @@ def enter_money():
         return enter_money()  # prompts retry
 
 
-def csv_read_non_processed_values(filename):
+def csv_sum_non_processed(filename,PROCESSED=True):
     """
-    takes a file name, extracts column 3 for all where col 4 is 0, returns a list
-    col 3 = value, col 4 = processed tag
+    takes a file name, returns a sum of all values that haven't been processed.
+    PROCESSED - sets processed tag to 1, indicating it has been processed.
     """
-    values = []
-    with open(filename, 'r', encoding='UTF8', newline='') as data_file:
-        reader = csv.reader(data_file)
+    df = pd.read_csv(filename)
+    unprocessed = df[df['Processed']==0]
 
-        # skips header
-        next(reader, None)
+    if PROCESSED:
+        df['Processed'] = 1
+        df.to_csv(filename,index=False)
 
-        for row in reader:
-            # print(row[2], row[3])
-            if row[3] == '0':
-                values.append(float(row[2]))
-                # TODO write flag to 1 as now processed
-
-    return values
-
+    return unprocessed['Value'].sum()
 
 def process_files(filenames):
     """
     takes a list of filenames, opens each, sums the values
     (that havent already been processed - processed tag == 0),
-    returns a list with one total value per person, lines up with filenames
+    returns a list with one total value per person, lines up with names
     """
     totals = []
     for filename in filenames:
         # print(filename)
-        values = np.asarray(csv_read_non_processed_values(filename))
-        totals.append(np.sum(values))
+        totals.append(csv_sum_non_processed(filename))
+        # totals.append(csv_sum_non_processed(filename, False))
     return totals
 
 
@@ -301,8 +296,8 @@ def process_data(arr, names):
 
                     if value > 0:
                         print(names[i], 'owes', names[j], '£', end='')
-                        print(f"{abs(value):0.2f}")  # format +ve, .XX
-
+                        print(f"{abs(value):0.2f}")  # formats +ve, .XX
+    # TODO print no change if nothing needs doing.
     # TODO could return a matrix (arr) of who owes who
 
 

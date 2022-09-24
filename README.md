@@ -12,6 +12,8 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 
 - python (3.9)
 - numpy (1.23.1)
+- regex (2022.7.9)
+- pandas (1.4.4)
 
 ### Conda
 
@@ -23,7 +25,6 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 
 ## TODO
 
-- [ ] Change `processed` tag to 1 when processed
 - [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
 - [ ] Add more file editing options
