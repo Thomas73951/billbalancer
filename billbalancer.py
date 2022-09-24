@@ -101,8 +101,11 @@ def init_file(file_path):
     makes a new empty .csv file with inputted name
     In directory of file_path
     """
-    # TODO check something was entered (name not blank)
-    name = str(input('Enter the persons name for this file: '))
+    while True:
+        name = str(input('Enter the persons name for this file: '))
+        if name:
+            break
+        print('Nothing entered, try again.')
     header = ['Date', 'Description', 'Value', 'Processed']
     # print(header)
     filename = file_path + 'billbalancer_' + name + '.csv'
@@ -133,7 +136,6 @@ def parse_for_name(filename):
     takes a file name in the format " *_name.* " and will extract name
     e.g. billbalancer_joe.csv => joe
     """
-    # TODO fix for example_csv\billbalancer_Alice.csv
     try:
         # have to use regex instead of re as `\k` isn't supported.
         # last underscore, match until dot.
