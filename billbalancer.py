@@ -113,7 +113,7 @@ def init_file(file_path):
     filename = file_path + 'billbalancer_' + name + '.csv'
 
     filenames = find_files('billbalancer_*.csv')
-    for file in filenames: # TODO make use of csv FileExistsError
+    for file in filenames:  # TODO make use of csv FileExistsError
 
         # file matches one already in directory
         if file == filename:
@@ -236,19 +236,20 @@ def enter_money():
         return enter_money()  # prompts retry
 
 
-def csv_sum_non_processed(filename,PROCESSED=True):
+def csv_sum_non_processed(filename, PROCESSED=True):
     """
     takes a file name, returns a sum of all values that haven't been processed.
     PROCESSED - sets processed tag to 1, indicating it has been processed.
     """
     df = pd.read_csv(filename)
-    unprocessed = df[df['Processed']==0]
+    unprocessed = df[df['Processed'] == 0]
 
     if PROCESSED:
         df['Processed'] = 1
-        df.to_csv(filename,index=False)
+        df.to_csv(filename, index=False)
 
     return unprocessed['Value'].sum()
+
 
 def process_files(filenames):
     """
@@ -387,8 +388,8 @@ if __name__ == "__main__":
             elif answer in {'b', 'B', 'balance'}:
                 bills_to_balance = process_files(filenames)
                 process_data(bills_to_balance, names)
-                if str(input('Type "n" to exit, leave blank to continue: ')):
-                    break
+                print('Returning to main menu...')
+                str(input('Press enter to continue'))
 
             else:
                 print('#### Warning: invalid option ####')
