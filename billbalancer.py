@@ -33,6 +33,8 @@ def num_col(arr):
     return arr.shape[arr.ndim - 1]
 
 # - pandas fns
+
+
 def print_pd(df, max_length=0):
     """
     takes a pd data frame and prints it nicely
@@ -40,12 +42,15 @@ def print_pd(df, max_length=0):
     """
     row_count = df.shape[0]
     if max_length and (row_count > max_length):
-        print('Table is', row_count, 'lines long, only showing first', max_length, 'lines.')
+        print('Table is', row_count,
+              'lines long, only showing first', max_length, 'lines.')
         print(df.head(max_length))
     else:
         print(df)
 
 # - file fns
+
+
 def find_files(query):
     """
     takes the search query and looks for all files in the current dir that matches it
@@ -161,6 +166,45 @@ def parse_for_name(filename):
     return result
 
 
+def row_edit(df):
+    """
+    takes a pd df and allows for row editing. billbalancer specific
+    """
+    print('Full file:')
+    print_pd(df)
+    while True:  # checks something was entered
+        try:
+            row_num = int(input('Enter the row number to edit: '))
+            break
+        except ValueError:
+            print('#### Warning: invalid option ####')
+
+    print('Chosen row:')
+    print(df.loc[[row_num]])
+
+    print('\n~~ Column Options ~~')
+    print('0 - Date')
+    print('1 - Description')
+    print('2 - Value')
+    print('3 - Processed tag')
+    while True:  # checks its valid
+        try:
+            col_num = int(input('Select column to edit: '))
+            if 0 <= col_num <= 3:
+                break
+        except ValueError:
+            pass
+        print('#### Warning: invalid option ####')
+
+    value = input('New value: ')
+    # replaces cell with that value
+    df.iat[row_num, col_num] = value
+
+    if input('type "y" to edit more rows, leave blank to save file: '):
+        return row_edit(df)
+    return df
+
+
 def file_edit(filename):
     """
     takes a filename and gives the user options for manipulating the file
@@ -179,12 +223,16 @@ def file_edit(filename):
     print('- To permanently delete the file, type "delete"')
     print('- Leave blank to return to the main menu')
     edit_answer = input('Choice: ')
+    # TODO add file renaming
 
     if edit_answer:
         # if nothing typed it will skip around to start of while
         if edit_answer in {'m', 'M', 'manual'}:
             print('Editing rows manually...')
-            # TODO add manual row editing stuff.
+            df = row_edit(df)
+            print('Saving file:')
+            print(df)
+            df.to_csv(filename, index=False)
 
         elif edit_answer in {'a', 'A', 'add'}:
             print('Adding row(s) to this file')
