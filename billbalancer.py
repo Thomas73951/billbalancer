@@ -32,6 +32,18 @@ def num_col(arr):
     arr = np.asarray(arr)
     return arr.shape[arr.ndim - 1]
 
+# - pandas fns
+def print_pd(df, max_length=0):
+    """
+    takes a pd data frame and prints it nicely
+    obeying max_length given. ignores if 0.
+    """
+    row_count = df.shape[0]
+    if max_length and (row_count > max_length):
+        print('Table is', row_count, 'lines long, only showing first', max_length, 'lines.')
+        print(df.head(max_length))
+    else:
+        print(df)
 
 # - file fns
 def find_files(query):
@@ -149,6 +161,45 @@ def parse_for_name(filename):
     return result
 
 
+def file_edit(filename):
+    """
+    takes a filename and gives the user options for manipulating the file
+    """
+    # reads file into pd data frame.
+    df = pd.read_csv(filename)
+
+    # prints file (first 15 lines only)
+    print('\nChosen file:')
+    print_pd(df, 15)
+
+    # menu - asks for manual row edit, row addition, file deletion.
+    print('\n~~ Edit File Options ~~')
+    print('- To manually edit a row, type "m"')
+    print('- To add rows to the file, type "a"')
+    print('- To permanently delete the file, type "delete"')
+    print('- Leave blank to return to the main menu')
+    edit_answer = input('Choice: ')
+
+    if edit_answer:
+        # if nothing typed it will skip around to start of while
+        if edit_answer in {'m', 'M', 'manual'}:
+            print('Editing rows manually...')
+            # TODO add manual row editing stuff.
+
+        elif edit_answer in {'a', 'A', 'add'}:
+            print('Adding row(s) to this file')
+            add_rows(filename)
+
+        elif edit_answer in {'delete', 'Delete'}:
+            print('deleting file...')
+            # TODO file deletion with type name protection.
+
+        else:
+            print('#### Warning: invalid option ####')
+            return file_edit(filename)
+    return None
+
+
 def add_rows(filename):
     """
     takes a file and will add row(s) to it with given data
@@ -165,6 +216,7 @@ def add_rows(filename):
         # print(date)
 
         # description
+        # TODO force non empty description.
         if description:
             input_text = 'leave blank to reuse last description ("' + description + '")' + \
                 '\n' + 'or enter a description of the bill: '
@@ -310,7 +362,7 @@ if __name__ == "__main__":
 
     # choose file path
     while True:
-        print('File path options:')
+        print('\n~~ File Path Options ~~')
         print('- To load example files, type "e"')
         print('- To load a code defined folder, type "c"')
         print('- To use the current directory, leave blank')
@@ -356,27 +408,19 @@ if __name__ == "__main__":
             # otherwise exit
             break
 
-        print('\nOptions:')
+        # main menu
+        print('\n~~ Main Menu Options ~~')
         print('- Type a file number to edit the file')
         print('- To create a new file, type "n"')
         print('- To balance all outstanding bills, type "b"')
         print('- Leave blank to quit')
         answer = input('Choice: ')
 
-        # TODO tidy up the numerous `continue`  and `break`
         if answer:  # not left blank
             if is_integer(answer):
-                answer = int(answer)
-
-                # TODO allow for proper file editing:
-                # printing of file (if not too long, two parts?)
-                # editing rows (inc mark/unmark processed)
-                # deleting file
-                # or adding rows.
-
-                # add rows to that file
-                print('Adding row(s) to this file')
-                add_rows(filenames[answer])
+                # now editing the chosen file
+                # note: was type str from input.
+                file_edit(filenames[int(answer)])
 
             elif answer in {'n', 'N', 'new'}:
                 print('Creating a new file')
