@@ -5,9 +5,6 @@ and say who needs to pay who and how much
 # pylint: disable=redefined-outer-name
 # pylint: disable=invalid-name
 
-# TODO improve function type hints
-
-from array import array
 import os
 import csv
 import sys
