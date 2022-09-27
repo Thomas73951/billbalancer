@@ -7,6 +7,7 @@ and say who needs to pay who and how much
 
 # TODO improve function type hints
 
+from array import array
 import os
 import csv
 import sys
@@ -58,7 +59,7 @@ def print_pd(df, max_length=0):
 # - file fns
 
 
-def find_files(query):
+def find_files(query: str):
     """
     takes the search query and looks for all files in the current dir that matches it
     and returns a list with the names of them.
@@ -70,7 +71,7 @@ def find_files(query):
     return filenames
 
 
-def print_list(plist, INDEX=False):  # pylint: disable=c0103
+def print_list(plist: list, INDEX=False):  # pylint: disable=c0103
     """
     takes a list and prints it one element / line in the terminal.
     INDEX: optionally will print a number by each element
@@ -81,7 +82,7 @@ def print_list(plist, INDEX=False):  # pylint: disable=c0103
         print(value)
 
 
-def csv_write_data(filename, data, open_method):
+def csv_write_data(filename: str, data: list, open_method: str):
     """
     takes a filename and data, then writes to the csv file with that and closes it
     works for one or multiple rows
@@ -108,7 +109,7 @@ def csv_write_data(filename, data, open_method):
 
 
 # - other fns
-def is_integer(test_string):
+def is_integer(test_string: str):
     """
     checks a string to see if it's an int or not
     credit: https://note.nkmk.me/en/python-check-int-float/
@@ -121,7 +122,7 @@ def is_integer(test_string):
         return float(test_string).is_integer()
 
 
-def regex_search(query, word):
+def regex_search(query: str, word: str):
     """
     takes a word and searches for one match according to the query
     returns it
@@ -136,10 +137,11 @@ def regex_search(query, word):
 
 
 # billbalancer specific fns
-def init_file(file_path):
+def init_file(file_path: str):
     """
     makes a new empty .csv file with inputted name
     In directory of file_path
+    returns name (idk why actuallly tbh)
     """
     while True:
         name = str(input('Enter the persons name for this file: '))
@@ -171,7 +173,7 @@ def init_file(file_path):
     return name
 
 
-def parse_for_name(filename):
+def parse_for_name(filename: str):
     """
     takes a file name in the format " *_name.* " and will extract name
     e.g. billbalancer_joe.csv => joe
@@ -191,6 +193,7 @@ def parse_for_name(filename):
 def row_edit(df):
     """
     takes a pd df and allows for row editing. billbalancer specific
+    returns the modified df
     """
     print('Full file:')
     print_pd(df)
@@ -227,7 +230,7 @@ def row_edit(df):
     return df
 
 
-def file_edit(filename):
+def file_edit(filename: str) -> None:
     """
     takes a filename and gives the user options for manipulating the file
     """
@@ -269,7 +272,8 @@ def file_edit(filename):
             current_name = parse_for_name(filename)
             print('Current name is:', current_name)
             new_name = str(input('Enter the new name: '))
-            folder_path = regex_search('.*^.*\/', filename)  # pylint: disable=W1401
+            folder_path = regex_search(
+                '.*^.*\/', filename)  # pylint: disable=W1401
             new_filename = folder_path + 'billbalancer_' + new_name + '.csv'
             os.rename(filename, new_filename)
 
@@ -289,7 +293,7 @@ def file_edit(filename):
     return None
 
 
-def add_rows(filename):
+def add_rows(filename: str):
     """
     takes a file and will add row(s) to it with given data
     """
@@ -356,7 +360,7 @@ def enter_date():
         return enter_date()  # prompts retry
 
 
-def enter_money():
+def enter_money() -> float:
     """
     prompts user to enter a money value and returns it,
     errors for too many dp and non numbers -> forces retry
@@ -377,7 +381,7 @@ def enter_money():
         return enter_money()  # prompts retry
 
 
-def csv_sum_non_processed(filename, PROCESSED=True):
+def csv_sum_non_processed(filename: str, PROCESSED=True) -> float:
     """
     takes a file name, returns a sum of all values that haven't been processed.
     PROCESSED - sets processed tag to 1, indicating it has been processed.
@@ -392,7 +396,7 @@ def csv_sum_non_processed(filename, PROCESSED=True):
     return unprocessed['Value'].sum()
 
 
-def process_files(filenames):
+def process_files(filenames: list):
     """
     takes a list of filenames, opens each, sums the values
     (that havent already been processed - processed tag == 0),
@@ -406,7 +410,7 @@ def process_files(filenames):
     return totals
 
 
-def process_data(arr, names):
+def process_data(arr: array, names: list) -> None:
     """
     takes a numpy array (1D) and list of names
     balances the arr and determines who owes who
@@ -438,7 +442,7 @@ def process_data(arr, names):
 
                     if value > 0:
                         print(names[i], 'owes', names[j], '£', end='')
-                        print(f"{abs(value):0.2f}")  # formats +ve, .XX
+                        print(f"{value:0.2f}")  # formats +ve, .XX
     # TODO print no change if nothing needs doing.
     # TODO could return a matrix (arr) of who owes who
 
