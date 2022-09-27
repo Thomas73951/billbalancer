@@ -5,6 +5,8 @@ and say who needs to pay who and how much
 # pylint: disable=redefined-outer-name
 # pylint: disable=invalid-name
 
+# TODO improve function type hints
+
 import os
 import csv
 import sys
@@ -39,14 +41,19 @@ def print_pd(df, max_length=0):
     """
     takes a pd data frame and prints it nicely
     obeying max_length given. ignores if 0.
+    returns true if it exceeds max_length
     """
+    # TODO handle empty df - only header (column titles)
     row_count = df.shape[0]
     if max_length and (row_count > max_length):
         print('Table is', row_count,
               'lines long, only showing first', max_length, 'lines.')
         print(df.head(max_length))
-    else:
-        print(df)
+        return True
+
+    # otherwise just prints it.
+    print(df)
+    return False
 
 # - file fns
 
@@ -114,6 +121,20 @@ def is_integer(test_string):
         return float(test_string).is_integer()
 
 
+def regex_search(query, word):
+    """
+    takes a word and searches for one match according to the query
+    returns it
+    """
+    try:
+        # have to use regex instead of re as `\k` isn't supported.
+        result = regex.search(query, word).group(0)
+    except AttributeError:  # nothing found
+        result = ''
+
+    return result
+
+
 # billbalancer specific fns
 def init_file(file_path):
     """
@@ -155,6 +176,7 @@ def parse_for_name(filename):
     takes a file name in the format " *_name.* " and will extract name
     e.g. billbalancer_joe.csv => joe
     """
+    # TODO replace with regex_search
     try:
         # have to use regex instead of re as `\k` isn't supported.
         # last underscore, match until dot.
@@ -214,16 +236,19 @@ def file_edit(filename):
 
     # prints file (first 15 lines only)
     print('\nChosen file:')
-    print_pd(df, 15)
+    if print_pd(df, 15):
+        if str(input('type "y" to print the whole file, leave blank to continue: ')):
+            print('Whole file:')
+            print(df)
 
     # menu - asks for manual row edit, row addition, file deletion.
     print('\n~~ Edit File Options ~~')
     print('- To manually edit a row, type "m"')
     print('- To add rows to the file, type "a"')
+    print('- To rename the file, type "r"')
     print('- To permanently delete the file, type "delete"')
     print('- Leave blank to return to the main menu')
     edit_answer = input('Choice: ')
-    # TODO add file renaming
 
     if edit_answer:
         # if nothing typed it will skip around to start of while
@@ -238,9 +263,25 @@ def file_edit(filename):
             print('Adding row(s) to this file')
             add_rows(filename)
 
+        elif edit_answer in {'r', 'R', 'rename'}:
+            print('Renaming the file')
+            print(filename)
+            current_name = parse_for_name(filename)
+            print('Current name is:', current_name)
+            new_name = str(input('Enter the new name: '))
+            folder_path = regex_search('.*^.*\/', filename)  # pylint: disable=W1401
+            new_filename = folder_path + 'billbalancer_' + new_name + '.csv'
+            os.rename(filename, new_filename)
+
         elif edit_answer in {'delete', 'Delete'}:
-            print('deleting file...')
-            # TODO file deletion with type name protection.
+            del_answer = str(
+                input('Are you sure you want to delete the file y/n: '))
+            if del_answer in {'y', 'Y'}:
+                print('Deleting file...')
+                os.remove(filename)
+                print('Deleted file')
+            else:
+                print('Aborted, not deleting file')
 
         else:
             print('#### Warning: invalid option ####')
