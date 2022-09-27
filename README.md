@@ -27,5 +27,4 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 
 - [ ] Upgrade to qt GUI interface
 - [ ] Add option to increase print level to show intermediate calculations
-- [ ] Add more file editing options
 - [ ] Add recurring bill (e.g. on the first from March to June 2022)
