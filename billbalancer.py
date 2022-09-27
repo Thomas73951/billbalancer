@@ -407,7 +407,7 @@ def process_files(filenames: list):
     return totals
 
 
-def process_data(arr: array, names: list) -> None:
+def process_data(arr, names: list) -> None:
     """
     takes a numpy array (1D) and list of names
     balances the arr and determines who owes who
