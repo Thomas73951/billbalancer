@@ -14,6 +14,7 @@ Recommended to use [Conda](#conda), otherwise packages can be installed with ven
 - numpy (1.23.1)
 - regex (2022.7.9)
 - pandas (1.4.4)
+- tk (8.6.12)
 
 ### Conda
 
