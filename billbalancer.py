@@ -10,16 +10,15 @@ import csv
 import sys
 import glob
 import datetime
+import tkinter.filedialog
+import tkinter as tk
 import regex
 import numpy as np
 import pandas as pd
 
-USER_PATH = 'example_csv' + os.path.sep
 
 # Utility fns
 # - Numpy fns
-
-
 def num_col(arr):
     """
     takes a numpy array and will return the number of columns.
@@ -454,7 +453,7 @@ if __name__ == "__main__":
     while True:
         print('\n~~ File Path Options ~~')
         print('- To load example files, type "e"')
-        print('- To load a code defined folder, type "c"')
+        print('- To choose a folder, type "c"')
         print('- To use the current directory, leave blank')
         path_answer = str(input('Choice: '))
         if path_answer:
@@ -462,9 +461,15 @@ if __name__ == "__main__":
                 print('Using example files...')
                 FILE_PATH = 'example_csv' + os.path.sep
 
-            elif path_answer in {'c', 'C', 'code'}:
-                print('Using Code defined folder. To edit, modify USER_PATH')
-                FILE_PATH = USER_PATH
+            elif path_answer in {'c', 'C', 'choose'}:
+                print('Select a folder in the file explorer window...')
+                # blocks other tk popup bits.
+                root = tk.Tk()
+                root.withdraw()
+                # opens file explorer open dialog, remembers last used location.
+                FILE_PATH = tkinter.filedialog.askdirectory() + '/'
+                # print(FILE_PATH)
+                # TODO check linux compatibility.
 
             else:
                 print('#### Warning: invalid option ####', end='\n\n')
@@ -492,10 +497,9 @@ if __name__ == "__main__":
             if str(input('Type "y" to create a new file, leave blank to exit: ')):
                 PERSON_NAME = init_file(FILE_PATH)
                 FILENAME = FILE_PATH + 'billbalancer_' + PERSON_NAME + '.csv'
-                if str(input('type "y" to add rows to this file, or blank to exit: ')):
+                if str(input('type "y" to add rows to this file, or blank to continue: ')):
                     add_rows(FILENAME)
-                    continue
-            # otherwise exit
+                continue
             break
 
         # main menu
